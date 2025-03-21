@@ -36,7 +36,7 @@ DSDBench is the first systematic benchmark explicitly created for data science c
 - **Comprehensive Annotations:** Includes 1,117 meticulously annotated examples, clearly labeling cause-effect error lines and runtime error messages.
 
 <div align="center">
-  <img src="assets/workflow.png" alt="DSDBench framework">
+  <img src="assets/Figure_1.png" alt="DSDBench framework">
 </div>
 
 # 🚀 Methodology <a name="methodology"></a>
@@ -46,10 +46,6 @@ Our contributions include:
 - **Automated Error Injection:**  Leveraging advanced LLM techniques to systematically introduce realistic runtime errors.
 - **Dynamic Error Annotation:** Utilizing runtime tracing (with tools like `snoop`) to accurately capture cause-effect relationships in errors.
 - **Rigorous Evaluation Protocols:** Employing a four-dimensional evaluation approach covering cause lines, effect lines, error types, and error messages.
-
-<div align="center">
-  <img src="assets/example.png" alt="DSDBench examples">
-</div>
 
 # ⚡️ Getting Started <a name="getting-started"></a>
 
@@ -248,6 +244,12 @@ Evaluations of state-of-the-art LLMs reveal significant challenges in multi-bug 
 | Deepseek-V3      | 48.3%           | 34.5%            | 35.9%           | 34.7%              |
 
 Detailed analysis and ablation studies further emphasize the benchmark's complexity and its value in diagnosing model limitations.
+
+### Here is a case study of Large Reasoning Models on **DSDBench**: 
+
+<div align="center">
+  <img src="assets/Case_study.png" alt="DSDBench Case Study">
+</div>
 
 # 🔎 Citation <a name="citation"></a>
 
