@@ -164,6 +164,66 @@ To specify a particular configuration file when running the workflow:
 python workflow_generic.py --config config/your_chosen_config.py
 ```
 
+#### Configuration Structure
+
+Each configuration file follows a standard structure:
+
+```python
+AGENT_CONFIG = {
+    'workspace': './workspace/path',  # Base workspace directory
+    'agents': [
+        {
+            'name': 'agent_name',     # Name of the agent
+            'class': AgentClass,      # The agent class to instantiate
+            'prompts': {              # Prompts used by the agent
+                'system': SYSTEM_PROMPT,
+                'user': USER_PROMPT,
+                'eval': EVAL_PROMPT,
+                # Other prompts as needed
+            },
+            'kwargs': {               # Additional agent parameters
+                'query': 'Default query',
+                # Other parameters as needed
+            }
+        },
+        # Additional agents as needed
+    ]
+}
+
+WORKFLOW = [
+    {
+        'agent': 'agent_name',        # Name of the agent to run
+        'method': 'method_name',      # Agent method to execute
+        'args': {                     # Arguments for the method
+            'model_type': 'gpt-4o',   # LLM model to use
+            'eval_folder': 'workspace/results'  # Output location
+        },
+        'input': {'data': 'path/to/input.jsonl'},  # Input data source
+        'data_ids': [1, 2, 3],        # Optional specific data IDs to process
+        'output': 'result_name',      # Name for the output
+        'output_type': 'analysis'     # Type of output
+    },
+    # Additional workflow steps as needed
+]
+```
+
+#### Customizing Agent Parameters
+
+Agents can be customized through the `kwargs` dictionary in their configuration. Common parameters include:
+
+- `query`: Default query text for the agent
+- `data_information`: Additional data context for the agent
+
+#### Model Selection
+
+The `model_type` parameter in workflow steps determines which LLM to use for evaluation:
+
+- `gpt-4o`: OpenAI GPT-4o model
+- `Qwen/Qwen2.5-72B-Instruct`: Qwen 2.5 model
+- `deepseek/deepseek-v3`: DeepSeek v3 model
+
+Different models can be configured for different evaluation scenarios to compare performance.
+
 # 📊 Experiment Results
 
 Evaluations of state-of-the-art LLMs show significant performance challenges in multi-bug debugging scenarios. Notable results include:
