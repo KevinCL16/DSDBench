@@ -75,31 +75,36 @@ You can install DSDBench-Open and its dependencies using one of the following me
 
 The DSDBench-Open repository has the following structure:
 
-```
-DSDBench-Open/
-├── agents/                   # Agent model implementation directory
-├── config/                   # Configuration files directory
-│   ├── dabench_quantitative_experiment_config.py
-│   ├── single_bug_eval_agent_config.py
-│   ├── multi_bug_eval_agent_config.py
-│   ├── error_snoop_agent_config.py
-│   ├── library_error_inject_agent_config.py
-│   ├── weak_llm_direct_analysis_config.py
-│   └── data_annotate_agent_config.py
-├── workspace/                # Workspace directory
-│   ├── benchmark_evaluation/ # Benchmark evaluation directory
-│   │   ├── bench_final_annotation_v4.jsonl
-│   │   ├── bench_final_annotation_with_multi_errors_v2.jsonl
-│   │   ├── compute_eval_result.py
-│   │   └── compute_multi_eval_results_improved.py
-│   ├── filter_non_executable_data.py
-│   ├── find_multi_hop_data.py
-│   ├── merge_final_annotation.py
-│   └── merge_multiple_errors.py
-├── workflow_generic.py      # Main workflow execution script with command line support
-├── run_single_bug_eval.py   # Helper script for single-bug evaluation
-└── run_multi_bug_eval.py    # Helper script for multi-bug evaluation
-```
+- `DSDBench-Open/`
+    - **📁 agents/**
+        * (*Agent model implementation directory*)
+    - **📁 config/**
+        * (*Configuration files directory*)
+        - `dabench_quantitative_experiment_config.py`
+        - `single_bug_eval_agent_config.py`
+        - `multi_bug_eval_agent_config.py`
+        - `error_snoop_agent_config.py`
+        - `library_error_inject_agent_config.py`
+        - `weak_llm_direct_analysis_config.py`
+        - `data_annotate_agent_config.py`
+    - **📁 workspace/**
+        * (*Workspace directory*)
+        - **📁 benchmark_evaluation/**
+            * (*Benchmark evaluation directory*)
+            - `bench_final_annotation_v4.jsonl`
+            - `bench_final_annotation_with_multi_errors_v2.jsonl`
+            - `compute_eval_result.py`
+            - `compute_multi_eval_results_improved.py`
+        - `filter_non_executable_data.py`
+        - `find_multi_hop_data.py`
+        - `merge_final_annotation.py`
+        - `merge_multiple_errors.py`
+    - `workflow_generic.py`
+        * (*Main workflow execution script with command line support*)
+    - `run_single_bug_eval.py`
+        * (*Helper script for single-bug evaluation*)
+    - `run_multi_bug_eval.py`
+        * (*Helper script for multi-bug evaluation*)
 
 ## ▶️ Running Evaluations
 
