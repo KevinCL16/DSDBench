@@ -20,15 +20,15 @@
 </p>
 </div>
 
-# Introduction <a name="introduction"></a>
+# 📖 Introduction <a name="introduction"></a>
 
 Debugging data science code presents significant challenges, especially when multiple logical errors interact in intricate ways. Existing benchmarks often focus on simple, isolated error scenarios, leaving the debugging of multi-hop, multi-bug errors largely unexplored. **DSDBench-Open** fills this critical gap by offering a comprehensive dataset and evaluation framework designed to assess and improve large language models (LLMs) in debugging complex, real-world data science code problems.
 
-# News <a name="news"></a>
+# 🎉 News <a name="news"></a>
 
 - **March 21, 2024:** DSDBench-Open dataset and evaluation framework officially released! 🎊
 
-# DSDBench <a name="dsdbench"></a>
+# ✨ DSDBench <a name="dsdbench"></a>
 
 DSDBench is the first systematic benchmark explicitly created for data science code debugging, featuring:
 
@@ -41,7 +41,7 @@ DSDBench is the first systematic benchmark explicitly created for data science c
   <img src="assets/workflow.png" alt="DSDBench framework">
 </div>
 
-# Methodology <a name="methodology"></a>
+# 🚀 Methodology <a name="methodology"></a>
 
 Our contributions include:
 
@@ -53,11 +53,11 @@ Our contributions include:
   <img src="assets/example.png" alt="DSDBench examples">
 </div>
 
-# Getting Started <a name="getting-started"></a>
+# ⚡️ Getting Started <a name="getting-started"></a>
 
 To start using DSDBench-Open, follow these installation and execution steps:
 
-## Installation
+## 🛠️ Installation
 
 You can install DSDBench-Open and its dependencies using one of the following methods:
 
@@ -71,7 +71,7 @@ You can install DSDBench-Open and its dependencies using one of the following me
    pip install -e .
    ```
 
-## Project Structure
+## 📂 Project Structure
 
 The DSDBench-Open repository has the following structure:
 
@@ -101,7 +101,7 @@ DSDBench-Open/
 └── run_multi_bug_eval.py    # Helper script for multi-bug evaluation
 ```
 
-## Running Evaluations
+## ▶️ Running Evaluations
 
 DSDBench-Open provides helper scripts to simplify the evaluation process:
 
@@ -119,7 +119,7 @@ python run_multi_bug_eval.py
 ```
 This command executes the multi-bug workflow and calculates the multi-error evaluation metrics.
 
-## Manual Execution
+## 🕹️ Manual Execution
 
 For more control, you can run individual workflow components manually:
 
@@ -139,7 +139,7 @@ cd workspace/benchmark_evaluation
 python compute_multi_eval_results_improved.py
 ```
 
-## Dataset Creation
+## 📝 Dataset Creation
 
 To generate datasets from scratch, execute the pipeline steps in the following order:
 
@@ -155,7 +155,7 @@ python merge_final_annotation.py
 python merge_multiple_errors.py
 ```
 
-## Configuration Details
+## ⚙️ Configuration Details
 
 The configuration files in the `config/` directory manage different aspects of the benchmark. Here's a brief overview:
 
@@ -172,7 +172,7 @@ To use a specific configuration file when running the workflow, use the `--confi
 python workflow_generic.py --config config/your_chosen_config.py
 ```
 
-### Configuration Structure
+### ⚙️ Configuration Structure
 
 Each configuration file adheres to a standard structure defined as follows:
 
@@ -215,14 +215,14 @@ WORKFLOW = [
 ]
 ```
 
-### Customizing Agent Parameters
+### ⚙️ Customizing Agent Parameters
 
 Agents can be customized by modifying the `kwargs` dictionary within their configuration. Common parameters include:
 
 - `query`:  Default query text used by the agent.
 - `data_information`: Additional data context provided to the agent.
 
-### Model Selection
+### ⚙️ Model Selection
 
 The `model_type` parameter in workflow steps specifies the LLM to be used for evaluation:
 
@@ -232,7 +232,7 @@ The `model_type` parameter in workflow steps specifies the LLM to be used for ev
 
 Different models can be configured for various evaluation scenarios to facilitate performance comparisons.
 
-# Experiment Results <a name="experiment-results"></a>
+# 📊 Experiment Results <a name="experiment-results"></a>
 
 Evaluations of state-of-the-art LLMs reveal significant challenges in multi-bug debugging scenarios. Key results are summarized below:
 
@@ -244,7 +244,7 @@ Evaluations of state-of-the-art LLMs reveal significant challenges in multi-bug 
 
 Detailed analysis and ablation studies further emphasize the benchmark's complexity and its value in diagnosing model limitations.
 
-# Citation <a name="citation"></a>
+# 🔎 Citation <a name="citation"></a>
 
 If DSDBench-Open is helpful in your research, please cite our work using the following BibTeX entry:
 
