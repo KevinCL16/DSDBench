@@ -65,6 +65,20 @@ You can install DSDBench-Open and its dependencies using one of the following me
    pip install -e .
    ```
 
+## 🔑 API Configuration
+
+To use DSDBench-Open with language models that require API access (like GPT-4o), you need to configure your API credentials:
+
+1. Open the configuration file at `agents/config/openai.py`
+2. Add your API key and base URL:
+   ```python
+   API_KEY = 'your-api-key-here'
+   BASE_URL = 'https://api.openai.com/v1'  # Default OpenAI URL, change if using a different provider
+   temperature = 0  # Adjust model temperature as needed
+   ```
+
+Note: If you're using a different model provider (like Azure OpenAI), set the appropriate base URL according to your provider's documentation.
+
 ## 📂 Project Structure
 
 The DSDBench-Open repository has the following structure:
