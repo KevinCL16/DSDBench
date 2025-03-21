@@ -12,6 +12,7 @@
 </p>
 <p align="center">
  • <a href="#getting-started">⚡️ Getting Started</a> •
+ <a href="#configuration-details">⚙️ Configuration Details</a> •
  <a href="#experiment-results">📊 Experiment Results</a> •
  <a href="#citation">🔎 Citation</a> •
  <a href="">📃 Paper</a>
@@ -186,7 +187,7 @@ Each utility script supports command-line arguments for flexible input/output pa
 - **merge_final_annotation.py**: Merges multiple JSONL annotation files into a single dataset
 - **merge_multiple_errors.py**: Generates multi-bug scenarios by combining single-bug errors
 
-## ⚙️ Configuration Details
+# ⚙️ Configuration Details <a name="configuration-details"></a>
 
 The configuration files in the `config/` directory manage different aspects of the benchmark. Here's a brief overview:
 
