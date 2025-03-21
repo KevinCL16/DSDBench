@@ -20,11 +20,11 @@
 
 # 📖 Introduction <a name="introduction"></a>
 
-Debugging data science code presents significant challenges, especially when multiple logical errors interact in intricate ways. Existing benchmarks often focus on simple, isolated error scenarios, leaving the debugging of multi-hop, multi-bug errors largely unexplored. **DSDBench-Open** fills this critical gap by offering a comprehensive dataset and evaluation framework designed to assess and improve large language models (LLMs) in debugging complex, real-world data science code problems.
+Debugging data science code presents significant challenges, especially when multiple logical errors interact in intricate ways. Existing benchmarks often focus on simple, isolated error scenarios, leaving the debugging of multi-hop, multi-bug errors largely unexplored. **DSDBench** fills this critical gap by offering a comprehensive dataset and evaluation framework designed to assess and improve large language models (LLMs) in debugging complex, real-world data science code problems.
 
 # 🎉 News <a name="news"></a>
 
-- **March 21, 2024:** DSDBench-Open dataset and evaluation framework officially released! 🎊
+- **March 21, 2024:** DSDBench dataset and evaluation framework officially released! 🎊
 
 # ✨ DSDBench <a name="dsdbench"></a>
 
@@ -49,11 +49,11 @@ Our contributions include:
 
 # ⚡️ Getting Started <a name="getting-started"></a>
 
-To start using DSDBench-Open, follow these installation and execution steps:
+To start using DSDBench, follow these installation and execution steps:
 
 ## 🛠️ Installation
 
-You can install DSDBench-Open and its dependencies using one of the following methods:
+You can install DSDBench and its dependencies using one of the following methods:
 
 1. **Using pip with requirements file:**
    ```bash
@@ -67,7 +67,7 @@ You can install DSDBench-Open and its dependencies using one of the following me
 
 ## 🔑 API Configuration
 
-To use DSDBench-Open with language models that require API access (like GPT-4o), you need to configure your API credentials:
+To use DSDBench with language models that require API access (like GPT-4o), you need to configure your API credentials:
 
 1. Open the configuration file at `agents/config/openai.py`
 2. Add your API key and base URL:
@@ -81,9 +81,9 @@ Note: If you're using a different model provider (like Azure OpenAI), set the ap
 
 ## 📂 Project Structure
 
-The DSDBench-Open repository has the following structure:
+The DSDBench repository has the following structure:
 
-- `DSDBench-Open/`
+- `DSDBench/`
     - **📁 agents/**
         * (*Agent model implementation directory*)
     - **📁 config/**
@@ -116,7 +116,7 @@ The DSDBench-Open repository has the following structure:
 
 ## ▶️ Running Evaluations
 
-DSDBench-Open provides helper scripts to simplify the evaluation process:
+DSDBench provides helper scripts to simplify the evaluation process:
 
 **For single-bug scenarios:**
 
@@ -283,7 +283,7 @@ Detailed analysis and ablation studies further emphasize the benchmark's complex
 
 # 🔎 Citation <a name="citation"></a>
 
-If DSDBench-Open is helpful in your research, please cite our work using the following BibTeX entry:
+If DSDBench is helpful in your research, please cite our work using the following BibTeX entry:
 
 ```bibtex
 @article{your2024dsdbench,
