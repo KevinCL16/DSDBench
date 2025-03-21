@@ -1,10 +1,8 @@
-# DSDBench-Open
+# DSDBench
 
 <div align="center">
 
-<img src="assets/title.png" alt="DSDBench-Open" width="500">
-
-**DSDBench-Open: Benchmarking LLMs as Data Science Code Debuggers for Multi-Hop and Multi-Bug Errors**
+**DSDBench: Benchmarking LLMs as Data Science Code Debuggers for Multi-Hop and Multi-Bug Errors**
 
 <p align="center">
  • <a href="#introduction">📖 Introduction</a> •
@@ -16,7 +14,7 @@
  • <a href="#getting-started">⚡️ Getting Started</a> •
  <a href="#experiment-results">📊 Experiment Results</a> •
  <a href="#citation">🔎 Citation</a> •
- <a href="#license">📃 License</a>
+ <a href="">📃 Paper</a>
 </p>
 </div>
 
