@@ -187,7 +187,3 @@ If DSDBench-Open aids your research, please cite our work:
   year={2024}
 }
 ```
-
-# 📃 License
-
-This project is licensed under the [Apache License 2.0](LICENSE). Please see the LICENSE file for details.
