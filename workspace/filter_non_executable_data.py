@@ -1,35 +1,55 @@
 # -*- coding: utf-8 -*-
 import json
+import argparse
+import os
 
 
 def filter_error_versions(input_file, output_file):
+    """
+    Filter error versions to keep only those with traceback information.
+    
+    Args:
+        input_file: Path to input JSONL file
+        output_file: Path to output filtered JSONL file
+    """
     with open(input_file, 'r', encoding='utf-8') as infile, open(output_file, 'w', encoding='utf-8') as outfile:
         count = 0
+        processed = 0
+        
         for idx, line in enumerate(infile):
-            # 解析每一行的 JSON 数据
+            # Parse JSON data
             data = json.loads(line)
-
-            # 筛选出 error_versions 中 execution_output 包含 "Traceback (most recent call last):" 的部分
+            processed += 1
+            
+            # Filter error_versions containing traceback information
             filtered_error_versions = [
                 error_version for error_version in data.get('error_versions', [])
-                if "Traceback (most recent call last):" and "!!!" in error_version.get('execution_output', '')
+                if "Traceback (most recent call last):" in error_version.get('execution_output', '')
             ]
-
-            # 如果有满足条件的 error_versions，保存到新的 JSON
+            
+            # If there are valid error versions, save to the new JSON
             if filtered_error_versions:
-                # 保持其他数据不变，只替换 error_versions
+                # Keep other data unchanged, only replace error_versions
                 data['error_versions'] = filtered_error_versions
-                print(f"data sample no. {idx} has {len(filtered_error_versions)} errors. \n")
                 count += len(filtered_error_versions)
-                # 写入到输出文件
+                # Write to output file
                 outfile.write(json.dumps(data, ensure_ascii=False) + '\n')
+        
+        print(f"Processed {processed} entries, found {count} valid error versions.")
 
-    print(f"Total error number: {count}.")
 
-
-# 输入和输出文件路径
-input_file = r'D:\ComputerScience\CODES\MatPlotAgent-main\workspace\sklearn_pandas_errors\llama-3.1-8b-instant_matplotbench_monitored_errors_with_use_agg.jsonl'  # 原始 JSONL 文件
-output_file = r'D:\ComputerScience\CODES\MatPlotAgent-main\workspace\sklearn_pandas_errors\filtered_llama-3.1-8b-instant_matplotbench_monitored_errors_with_use_agg.jsonl'  # 筛选后的 JSONL 文件
-
-# 执行筛选
-filter_error_versions(input_file, output_file)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Filter error versions with valid traceback information')
+    parser.add_argument('--input', default='workspace/sklearn_pandas_errors/monitored_errors.jsonl',
+                      help='Path to input JSONL file')
+    parser.add_argument('--output', default='workspace/sklearn_pandas_errors/filtered_errors.jsonl',
+                      help='Path to output filtered JSONL file')
+    
+    args = parser.parse_args()
+    
+    # Ensure output directory exists
+    os.makedirs(os.path.dirname(args.output), exist_ok=True)
+    
+    # Execute filtering
+    filter_error_versions(args.input, args.output)
+    print(f"Filtered data saved to {args.output}")

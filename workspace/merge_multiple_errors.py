@@ -1,12 +1,21 @@
 import json
 import itertools
 import random
+import argparse
+import os
+from tqdm import tqdm
 
 
 def restore_original_code(modified_code, error_versions):
     """
-    Restore the initial error-free code by replacing modified lines with original lines,
-    handling missing or empty values.
+    Restore the initial error-free code by replacing modified lines with original lines.
+    
+    Args:
+        modified_code: Code with errors
+        error_versions: List of error versions containing original and modified lines
+        
+    Returns:
+        Original code with errors corrected
     """
     lines = modified_code.split("\n")
     for error in error_versions:
@@ -18,14 +27,20 @@ def restore_original_code(modified_code, error_versions):
     return "\n".join(lines)
 
 
-def merge_errors_all_combinations(data_entry):
+def merge_errors_all_combinations(data_entry, max_combinations=None):
     """
-    Merge multiple errors into one modified_code by randomly selecting some errors from error_versions.
-    Handle missing values gracefully and ensure at least two errors are present for merging.
+    Merge multiple errors into one modified_code by generating combinations of errors.
+    
+    Args:
+        data_entry: Data entry containing error versions
+        max_combinations: Maximum number of combinations to generate per entry
+        
+    Returns:
+        List of merged error combinations
     """
     error_versions = data_entry.get("error_versions", [])
     if len(error_versions) < 2:
-        return None  # Skip entries with less than 2 errors
+        return []  # Skip entries with less than 2 errors
 
     modified_code = error_versions[0]["modified_code"]  # Take the first version's code as the base
 
@@ -34,8 +49,14 @@ def merge_errors_all_combinations(data_entry):
 
     all_combinations_info = []
     # Step 2: Iterate through all combinations of errors (from 2 up to the total number of errors)
-    for num_errors_to_merge in range(2, len(error_versions) + 1):
-        for selected_errors in itertools.combinations(error_versions, num_errors_to_merge):
+    for num_errors_to_merge in range(2, min(len(error_versions) + 1, 5)):  # Limit to 4 errors max
+        combinations = list(itertools.combinations(error_versions, num_errors_to_merge))
+        
+        # Limit the number of combinations per error count if max_combinations is specified
+        if max_combinations and len(combinations) > max_combinations // (len(error_versions) - 1):
+            combinations = random.sample(combinations, max_combinations // (len(error_versions) - 1))
+        
+        for selected_errors in combinations:
             # Step 3: Apply the selected errors to the original code
             merged_code_lines = original_code.split("\n")
             for error in selected_errors:
@@ -44,7 +65,7 @@ def merge_errors_all_combinations(data_entry):
                 if original_line and modified_line:
                     # Replace the original line with the modified line
                     merged_code_lines = [modified_line if line.strip() == original_line else line for line in
-                                         merged_code_lines]
+                                        merged_code_lines]
 
             # Step 4: Merge other information
             combined_error_info = {
@@ -61,47 +82,78 @@ def merge_errors_all_combinations(data_entry):
     return all_combinations_info
 
 
-def generate_multiple_merged_samples(data_entry, num_samples):
+def generate_multi_bug_dataset(input_file, output_file, samples_per_entry=5, max_total_samples=None):
     """
-    Generate multiple merged error samples from a single data entry by randomly selecting from all possible combinations.
+    Generate a dataset with multiple bugs per entry from single-bug annotations.
+    
+    Args:
+        input_file: Path to input JSONL file with single-bug annotations
+        output_file: Path to output JSONL file for multi-bug dataset
+        samples_per_entry: Number of multi-bug samples to generate per entry
+        max_total_samples: Maximum total samples in the output dataset
     """
-    all_combinations = merge_errors_all_combinations(data_entry)
-    if not all_combinations:
-        return []  # Return empty list if no combinations are generated (less than 2 errors)
-
-    num_combinations_available = len(all_combinations)
-    num_samples_to_generate = min(num_samples, num_combinations_available) # Ensure not to sample more than available combinations
-
-    merged_samples = random.sample(all_combinations, num_samples_to_generate) # Randomly sample from all combinations
-    return merged_samples
-
-
-def main(input_file, output_file):
     # Read JSONL data
-    with open(input_file, 'r') as file:
+    with open(input_file, 'r', encoding='utf-8') as file:
         data = [json.loads(line) for line in file]
 
     # Generate merged error samples for each entry and add IDs
     all_merged_samples = []
-    print(f"目前有{len(data)}条可供合并的数据")
-    merged_sample_id_counter = 0  # Initialize counter for merged sample IDs
-    for entry in data:
-        merged_samples = generate_multiple_merged_samples(entry, num_samples=8)
+    print(f"Processing {len(data)} entries for multi-bug generation")
+    
+    for entry in tqdm(data, desc="Generating multi-bug samples"):
+        # Calculate max combinations based on the total samples limit
+        max_combinations = None
+        if max_total_samples:
+            max_combinations = max(1, max_total_samples // len(data))
+        
+        merged_samples = merge_errors_all_combinations(entry, max_combinations)
+        
+        # Limit samples per entry
+        if merged_samples and len(merged_samples) > samples_per_entry:
+            merged_samples = random.sample(merged_samples, samples_per_entry)
+            
         for sample in merged_samples:
-            sample['id'] = merged_sample_id_counter  # Assign unique ID
-            merged_sample_id_counter += 1  # Increment counter
+            sample['id'] = len(all_merged_samples)  # Assign unique ID
             all_merged_samples.append(sample)
+            
+            # Check if we've reached the maximum total samples
+            if max_total_samples and len(all_merged_samples) >= max_total_samples:
+                break
+                
+        # Check again after processing this entry
+        if max_total_samples and len(all_merged_samples) >= max_total_samples:
+            break
 
-    print(f"生成了{len(all_merged_samples)}条多错误数据")
+    print(f"Generated {len(all_merged_samples)} multi-bug samples")
+    
     # Save results to a new JSONL file
-    with open(output_file, 'w') as file:
+    with open(output_file, 'w', encoding='utf-8') as file:
         for sample in all_merged_samples:
-            file.write(json.dumps(sample) + '\n')
+            file.write(json.dumps(sample, ensure_ascii=False) + '\n')
 
-    print(f"Merged samples saved to {output_file}")
+    print(f"Multi-bug dataset saved to {output_file}")
 
 
 if __name__ == "__main__":
-    input_file = r"D:\ComputerScience\CODES\MatPlotAgent-main\workspace\benchmark_evaluation\bench_annotation_for_multi_error_generation.jsonl"  # 输入文件路径
-    output_file = r"D:\ComputerScience\CODES\MatPlotAgent-main\workspace\benchmark_evaluation\bench_final_annotation_with_multi_errors_v2.jsonl"  # 输出文件路径
-    main(input_file, output_file)
+    parser = argparse.ArgumentParser(description='Generate multi-bug dataset from single-bug annotations')
+    parser.add_argument('--input', default='workspace/benchmark_evaluation/bench_final_annotation_single_error.jsonl',
+                       help='Path to input JSONL file with single-bug annotations')
+    parser.add_argument('--output', default='workspace/benchmark_evaluation/bench_final_annotation_multi_errors.jsonl',
+                       help='Path to output JSONL file for multi-bug dataset')
+    parser.add_argument('--samples_per_entry', type=int, default=5,
+                       help='Number of multi-bug samples to generate per entry')
+    parser.add_argument('--max_total_samples', type=int, default=None,
+                       help='Maximum total samples in the output dataset')
+    
+    args = parser.parse_args()
+    
+    # Ensure output directory exists
+    os.makedirs(os.path.dirname(args.output), exist_ok=True)
+    
+    # Generate multi-bug dataset
+    generate_multi_bug_dataset(
+        args.input, 
+        args.output, 
+        samples_per_entry=args.samples_per_entry,
+        max_total_samples=args.max_total_samples
+    )

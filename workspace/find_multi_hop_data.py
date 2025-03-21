@@ -1,14 +1,14 @@
 import json
 import re
 import os
-import pandas as pd
+import argparse
 from tqdm import tqdm
 from agents.utils import run_code
 
 
 def extract_traceback(error_str):
     """
-    从错误信息字符串中提取 'Traceback (most recent call last):' 及其之后的报错信息。
+    Extract 'Traceback (most recent call last):' and subsequent error information from an error string.
     """
     pattern = r"Traceback \(most recent call last\):.*"
     match = re.search(pattern, error_str, re.DOTALL)
@@ -43,27 +43,27 @@ def extract_filepath_and_filename(traceback_string):
 
 def extract_error_lines(execution_output):
     """
-    从 execution_output 中提取每个 '!!!' 标记对应的最近的代码行。
-    避免重复提取同一报错对应的代码行。
+    Extract error lines marked with '!!!' from execution output.
+    Avoid extracting duplicate error lines for the same error.
     """
     error_lines = []
     lines = execution_output.splitlines()
-    skip_next = False  # 标志变量，表示是否跳过重复的 '!!!'
+    skip_next = False  # Flag to skip duplicate '!!!' markers
 
     for i, line in enumerate(lines):
-        if "!!!" in line:  # 三个感叹号标记
-            if skip_next:  # 如果标志为 True，跳过当前 '!!!'
+        if "!!!" in line:  # Three exclamation marks as markers
+            if skip_next:  # Skip current '!!!' if flag is True
                 continue
-            # 从最近的代码行开始向上查找，以提取报错行代码
+            # Search upward for the code line
             for j in range(i - 1, -1, -1):
-                if "|" in lines[j]:  # 查找带有代码的行
-                    error_code_line = lines[j].split("|", 1)[1].strip()  # 提取代码内容
-                    if error_code_line not in error_lines:  # 避免重复添加
+                if "|" in lines[j]:  # Find line with code
+                    error_code_line = lines[j].split("|", 1)[1].strip()  # Extract code content
+                    if error_code_line not in error_lines:  # Avoid duplicates
                         error_lines.append(error_code_line)
                     break
-            skip_next = True  # 设置标志变量为 True，跳过后续的 '!!!'
+            skip_next = True  # Set flag to True to skip subsequent '!!!'
         else:
-            skip_next = False  # 如果当前行没有 '!!!'，重置标志变量为 False
+            skip_next = False  # Reset flag if current line has no '!!!'
 
     return error_lines
 
@@ -382,6 +382,82 @@ def find_meaningless_annotation_and_remedy(jsonl_file_path):
                 f.write(json.dumps(entry) + '\n')
 
 
+def find_cause_and_effect_lines(jsonl_file_path, output_file_path):
+    """
+    Analyze error versions in the JSONL file to identify cause and effect error lines.
+    """
+    with open(jsonl_file_path, "r", encoding="utf-8") as file:
+        entries = []
+        multi_hop_count = 0
+        single_hop_count = 0
+
+        for line in tqdm(file, desc="Processing entries"):
+            try:
+                entry = json.loads(line)
+            except json.JSONDecodeError as e:
+                print(f"JSON decode error: {e}")
+                continue
+
+            error_versions = entry.get("error_versions", [])
+            for error_version in error_versions:
+                execution_output = error_version.get("execution_output", "")
+
+                # Extract error lines from execution output
+                error_line_list = extract_error_lines(execution_output)
+
+                if len(error_line_list) >= 2:
+                    # Multi-hop error: at least two error lines
+                    effect_error_line = error_line_list[-1]  # Last error line is the effect
+                    cause_error_line = error_line_list[-2]   # Second-to-last is the cause
+                    
+                    # Add cause and effect lines to the error version
+                    error_version["effect_error_line"] = effect_error_line
+                    error_version["cause_error_line"] = cause_error_line
+                    
+                    if effect_error_line.strip() != cause_error_line.strip():
+                        multi_hop_count += 1
+                    else:
+                        single_hop_count += 1
+                        
+                elif len(error_line_list) == 1:
+                    # Single-hop error: only one error line
+                    effect_error_line = error_line_list[0]
+                    
+                    # For single-hop, both cause and effect are the same line
+                    error_version["effect_error_line"] = effect_error_line
+                    error_version["cause_error_line"] = effect_error_line
+                    single_hop_count += 1
+
+            # Keep the modified entry
+            entries.append(entry)
+
+    # Print statistics
+    print(f"\nMulti-hop errors: {multi_hop_count}")
+    print(f"Single-hop errors: {single_hop_count}")
+    print(f"Total errors: {multi_hop_count + single_hop_count}")
+
+    # Write modified data to the new JSONL file
+    with open(output_file_path, "w", encoding="utf-8") as output_file:
+        for entry in entries:
+            output_file.write(json.dumps(entry, ensure_ascii=False) + "\n")
+    
+    print(f"Processed data saved to: {output_file_path}")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Find multi-hop errors in data')
+    parser.add_argument('--input', default='workspace/sklearn_pandas_errors/filtered_errors.jsonl',
+                       help='Path to input JSONL file')
+    parser.add_argument('--output', default='workspace/benchmark_evaluation/annotated_errors.jsonl',
+                       help='Path to output annotated JSONL file')
+    
+    args = parser.parse_args()
+    
+    # Ensure output directory exists
+    os.makedirs(os.path.dirname(args.output), exist_ok=True)
+    
+    # Find cause and effect error lines
+    find_cause_and_effect_lines(args.input, args.output)
 
 # 测试函数，传入包含 JSONL 数据的文件路径
 jsonl_file_path = r"D:\ComputerScience\CODES\MatPlotAgent-main\workspace\benchmark_evaluation\bench_final_annotation_v4.jsonl"  # 替换为您的 JSONL 文件路径

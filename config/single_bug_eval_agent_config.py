@@ -29,7 +29,7 @@ WORKFLOW = [
             'model_type': 'gpt-4o',
             'eval_folder': 'workspace/benchmark_evaluation'
         },
-        'input': {'data': 'workspace/benchmark_evaluation/bench_final_annotation_v4.jsonl'},
+        'input': {'data': 'workspace/benchmark_evaluation/bench_final_annotation_single_error.jsonl'},
         'data_ids': [63],
         'output': 'rubber_duck_eval_result',
         'output_type': 'analysis'

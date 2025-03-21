@@ -99,10 +99,10 @@ The DSDBench-Open repository has the following structure:
         * (*Workspace directory*)
         - **📁 benchmark_evaluation/**
             * (*Benchmark evaluation directory*)
-            - `bench_final_annotation_v4.jsonl`
-            - `bench_final_annotation_with_multi_errors_v2.jsonl`
-            - `compute_eval_result.py`
-            - `compute_multi_eval_results_improved.py`
+            - `bench_final_annotation_single_error.jsonl`
+            - `bench_final_annotation_multi_errors.jsonl`
+            - `compute_single_eval_results.py`
+            - `compute_multi_eval_results.py`
         - `filter_non_executable_data.py`
         - `find_multi_hop_data.py`
         - `merge_final_annotation.py`
@@ -141,7 +141,7 @@ For more control, you can run individual workflow components manually:
 ```bash
 python workflow_generic.py --config config/single_bug_eval_agent_config.py
 cd workspace/benchmark_evaluation
-python compute_eval_result.py
+python compute_single_eval_results.py
 ```
 
 **For multi-bug evaluation:**
@@ -149,7 +149,7 @@ python compute_eval_result.py
 ```bash
 python workflow_generic.py --config config/multi_bug_eval_agent_config.py
 cd workspace/benchmark_evaluation
-python compute_multi_eval_results_improved.py
+python compute_multi_eval_results.py
 ```
 
 ## 📝 Dataset Creation
@@ -157,18 +157,34 @@ python compute_multi_eval_results_improved.py
 To generate datasets from scratch, execute the pipeline steps in the following order:
 
 ```bash
+# First, run the initial data generation workflows
 python workflow_generic.py --config config/data_annotate_agent_config.py
 python workflow_generic.py --config config/library_error_inject_agent_config.py
 python workflow_generic.py --config config/error_snoop_agent_config.py
 python workflow_generic.py --config config/weak_llm_direct_analysis_config.py
 
+# Then process the data with our improved utilities
 cd workspace
 
-python filter_non_executable_data.py
-python find_multi_hop_data.py
-python merge_final_annotation.py
-python merge_multiple_errors.py
+# Filter for executable errors
+python filter_non_executable_data.py --input path/to/monitored_errors.jsonl --output path/to/filtered_errors.jsonl
+
+# Find multi-hop errors
+python find_multi_hop_data.py --input path/to/filtered_errors.jsonl --output path/to/annotated_errors.jsonl
+
+# Merge annotations from multiple sources
+python merge_final_annotation.py --input path/to/file1.jsonl path/to/file2.jsonl --output path/to/bench_final_annotation_single_error.jsonl
+
+# Generate multi-bug scenarios
+python merge_multiple_errors.py --input path/to/bench_final_annotation_single_error.jsonl --output path/to/bench_final_annotation_multi_errors.jsonl --samples_per_entry 5
 ```
+
+Each utility script supports command-line arguments for flexible input/output path configuration:
+
+- **filter_non_executable_data.py**: Filters data to keep only error versions with valid traceback information
+- **find_multi_hop_data.py**: Identifies cause and effect error lines in traceback output
+- **merge_final_annotation.py**: Merges multiple JSONL annotation files into a single dataset
+- **merge_multiple_errors.py**: Generates multi-bug scenarios by combining single-bug errors
 
 ## ⚙️ Configuration Details
 

@@ -29,7 +29,7 @@ WORKFLOW = [
             'model_type': 'Qwen/Qwen2.5-72B-Instruct',
             'eval_folder': 'workspace/benchmark_evaluation'
         },
-        'input': {'data': 'workspace/benchmark_evaluation/bench_final_annotation_with_multi_errors_v2.jsonl'},
+        'input': {'data': 'workspace/benchmark_evaluation/bench_final_annotation_multi_errors.jsonl'},
         'data_ids': [4, 9, 10, 109, 110, 208, 309],
         'output': 'multi_rubber_duck_eval_result',
         'output_type': 'analysis'

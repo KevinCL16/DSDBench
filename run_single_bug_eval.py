@@ -22,7 +22,7 @@ def main():
     
     # Run evaluation script
     print("Computing evaluation results...")
-    eval_cmd = ["python", "compute_eval_result.py"]
+    eval_cmd = ["python", "compute_single_eval_results.py"]
     eval_process = subprocess.run(eval_cmd, check=True)
     if eval_process.returncode != 0:
         print("Error: Evaluation computation failed.")
