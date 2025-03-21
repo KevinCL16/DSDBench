@@ -238,7 +238,8 @@ WORKFLOW = [
             'eval_folder': 'workspace/results'  # Output location
         },
         'input': {'data': 'path/to/input.jsonl'},  # Input data source
-        'data_ids': [1, 2, 3],        # Optional specific data IDs to process
+        'data_ids': [1, 2, 3],        # Specific data IDs to process
+        'data_range": [1, 50],        # Mutual exclusive with 'data_ids', specify a range of data IDs to process
         'output': 'result_name',      # Name for the output
         'output_type': 'analysis'     # Type of output
     },
@@ -250,9 +251,6 @@ WORKFLOW = [
 
 Agents can be customized by modifying the `kwargs` dictionary within their configuration. Common parameters include:
 
-- `query`:  Default query text used by the agent.
-- `data_information`: Additional data context provided to the agent.
-
 ### ⚙️ Model Selection
 
 The `model_type` parameter in workflow steps specifies the LLM to be used for evaluation:
@@ -260,8 +258,7 @@ The `model_type` parameter in workflow steps specifies the LLM to be used for ev
 - `gpt-4o`: OpenAI GPT-4o model.
 - `Qwen/Qwen2.5-72B-Instruct`: Qwen 2.5 model.
 - `deepseek/deepseek-v3`: DeepSeek v3 model.
-
-Different models can be configured for various evaluation scenarios to facilitate performance comparisons.
+- and so on, whatever models your API key allows.
 
 # 📊 Experiment Results <a name="experiment-results"></a>
 
