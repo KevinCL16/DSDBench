@@ -15,7 +15,7 @@
  <a href="#configuration-details">⚙️ Configuration Details</a> •
  <a href="#experiment-results">📊 Experiment Results</a> •
  <a href="#citation">🔎 Citation</a> •
- <a href="">📃 Paper</a>
+ <a href="https://arxiv.org/abs/2503.22388">📃 Paper</a>
 </p>
 </div>
 
