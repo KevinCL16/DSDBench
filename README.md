@@ -284,10 +284,13 @@ Detailed analysis and ablation studies further emphasize the benchmark's complex
 If DSDBench is helpful in your research, please cite our work using the following BibTeX entry:
 
 ```bibtex
-@article{your2024dsdbench,
-  title={Why Stop at One Error? Benchmarking LLMs as Data Science Code Debuggers for Multi-Hop and Multi-Bug Errors},
-  author={Your Name and co-authors},
-  journal={Conference/Journal Name},
-  year={2024}
+@misc{yang2025stoperrorbenchmarkingllms,
+      title={Why Stop at One Error? Benchmarking LLMs as Data Science Code Debuggers for Multi-Hop and Multi-Bug Errors}, 
+      author={Zhiyu Yang and Shuo Wang and Yukun Yan and Yang Deng},
+      year={2025},
+      eprint={2503.22388},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2503.22388}, 
 }
 ```
