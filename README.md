@@ -25,7 +25,7 @@ Debugging data science code presents significant challenges, especially when mul
 
 # 🎉 News <a name="news"></a>
 
-- **September 15, 2025:** DSDBench has been accepted as EMNLP 2025 Oral! 🎊
+- **September 15, 2025:** DSDBench has been accepted as **EMNLP 2025 Oral**! 🎊
 - **March 21, 2025:** DSDBench dataset and evaluation framework officially released! 🎊
 
 # ✨ DSDBench <a name="dsdbench"></a>
