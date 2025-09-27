@@ -101,13 +101,23 @@ def main():
         print("Error: Workflow execution failed.")
         sys.exit(1)
     
+    # Store the original directory before changing
+    original_dir = os.getcwd()
+    
     # Change directory to benchmark_evaluation
     print("\nChanging directory to benchmark_evaluation...")
     os.chdir("workspace/benchmark_evaluation")
     
+    # Convert result file path to absolute path if it's relative
+    if not os.path.isabs(args.result_file):
+        # If it's a relative path, make it relative to the original working directory
+        result_file_path = os.path.join(original_dir, args.result_file)
+    else:
+        result_file_path = args.result_file
+    
     # Run evaluation script
     print("Computing evaluation results...")
-    eval_cmd = ["python", "compute_single_eval_results.py", "--result-file", args.result_file]
+    eval_cmd = ["python", "compute_single_eval_results.py", "--result-file", result_file_path]
     eval_process = subprocess.run(eval_cmd, check=True)
     if eval_process.returncode != 0:
         print("Error: Evaluation computation failed.")
