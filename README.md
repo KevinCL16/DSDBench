@@ -45,7 +45,7 @@ DSDBench is the first systematic benchmark explicitly created for data science c
 
 Our contributions include:
 
-- **Automated Error Injection:**  Leveraging advanced LLM techniques to systematically introduce realistic runtime errors.
+- **Automated Error Injection:** Leveraging advanced LLM techniques to systematically introduce realistic runtime errors.
 - **Dynamic Error Annotation:** Utilizing runtime tracing (with tools like `snoop`) to accurately capture cause-effect relationships in errors.
 - **Rigorous Evaluation Protocols:** Employing a four-dimensional evaluation approach covering cause lines, effect lines, error types, and error messages.
 
@@ -71,13 +71,22 @@ You can install DSDBench and its dependencies using one of the following methods
 
 To use DSDBench with language models that require API access (like GPT-4o), you need to configure your API credentials:
 
-1. Open the configuration file at `agents/config/openai.py`
-2. Add your API key and base URL:
-   ```python
-   API_KEY = 'your-api-key-here'
-   BASE_URL = 'https://api.openai.com/v1'  # Default OpenAI URL, change if using a different provider
-   temperature = 0  # Adjust model temperature as needed
+1. Copy the example environment file:
+   ```bash
+   cp env.example .env
    ```
+
+2. Edit the `.env` file and add your API credentials:
+   ```bash
+   # OpenAI API Configuration
+   OPENAI_API_KEY=your-api-key-here
+   OPENAI_BASE_URL=https://api.openai.com/v1
+   
+   # Or for other providers (e.g., Azure OpenAI)
+   OPENAI_BASE_URL=https://your-endpoint.openai.azure.com/
+   ```
+
+3. Alternatively, you can directly modify the configuration files in `agents/config/` directory.
 
 Note: If you're using a different model provider (like Azure OpenAI), set the appropriate base URL according to your provider's documentation.
 
@@ -85,61 +94,72 @@ Note: If you're using a different model provider (like Azure OpenAI), set the ap
 
 The DSDBench repository has the following structure:
 
-- `DSDBench/`
-    - **📁 agents/**
-        * (*Agent model implementation directory*)
-    - **📁 config/**
-        * (*Configuration files directory*)
-        - `dabench_quantitative_experiment_config.py`
-        - `single_bug_eval_agent_config.py`
-        - `multi_bug_eval_agent_config.py`
-        - `error_snoop_agent_config.py`
-        - `library_error_inject_agent_config.py`
-        - `weak_llm_direct_analysis_config.py`
-        - `data_annotate_agent_config.py`
-    - **📁 workspace/**
-        * (*Workspace directory*)
-        - **📁 benchmark_evaluation/**
-            * (*Benchmark evaluation directory*)
-            - `bench_final_annotation_single_error.jsonl`
-            - `bench_final_annotation_multi_errors.jsonl`
-            - `compute_single_eval_results.py`
-            - `compute_multi_eval_results.py`
-        - `filter_non_executable_data.py`
-        - `find_multi_hop_data.py`
-        - `merge_final_annotation.py`
-        - `merge_multiple_errors.py`
-    - `workflow_generic.py`
-        * (*Main workflow execution script with command line support*)
-    - `run_single_bug_eval.py`
-        * (*Helper script for single-bug evaluation*)
-    - `run_multi_bug_eval.py`
-        * (*Helper script for multi-bug evaluation*)
+```
+DSDBench/
+├── 📁 agents/                          # Agent implementations
+│   ├── error_verifier_agent/          # Error verification and evaluation
+│   │   ├── agent.py                   # Main evaluation agent
+│   │   ├── exact_match_evaluator.py   # Exact match evaluation logic
+│   │   └── prompt.py                  # Evaluation prompts
+│   ├── data_analysis_agent/           # Data analysis agent
+│   ├── error_suggest_agent/           # Error suggestion agent
+│   ├── agent_environment/            # Agent environment setup
+│   ├── openai_chatComplete.py        # OpenAI API client
+│   └── vllm_client.py                # vLLM client for local inference
+├── 📁 config/                         # Configuration files
+│   ├── single_bug_eval_agent_config.py    # Single-bug evaluation config
+│   ├── multi_bug_eval_agent_config.py    # Multi-bug evaluation config
+│   ├── vllm_single_bug_eval_agent_config.py  # vLLM single-bug config
+│   ├── vllm_multi_bug_eval_agent_config.py  # vLLM multi-bug config
+│   └── ...                           # Other configuration files
+├── 📁 workspace/                      # Workspace directory
+│   └── 📁 benchmark_evaluation/       # Benchmark evaluation directory
+│       ├── bench_final_annotation_single_error.jsonl      # Single-bug dataset
+│       ├── bench_final_annotation_multi_errors.jsonl      # Multi-bug dataset
+│       ├── compute_single_eval_results.py                 # Single-bug evaluation script
+│       └── compute_multi_eval_results.py                  # Multi-bug evaluation script
+├── 📁 assets/                         # Assets and figures
+├── run_single_bug_eval.py            # Single-bug evaluation runner
+├── run_multi_bug_eval.py             # Multi-bug evaluation runner
+├── run_vllm_single_bug_eval.py       # vLLM single-bug evaluation runner
+├── workflow_generic.py               # Generic workflow execution
+├── requirements.txt                   # Python dependencies
+└── setup.py                          # Package setup
+```
 
 ## ▶️ Running Evaluations
 
 DSDBench provides helper scripts to simplify the evaluation process:
 
-**For single-bug scenarios:**
+### 🎯 Quick Start - Single Command Evaluation
 
+**For single-bug scenarios:**
 ```bash
 python run_single_bug_eval.py
 ```
 This command automatically runs the workflow using the single-bug configuration and computes the evaluation results.
 
 **For multi-bug scenarios:**
-
 ```bash
 python run_multi_bug_eval.py
 ```
 This command executes the multi-bug workflow and calculates the multi-error evaluation metrics.
 
-## 🕹️ Manual Execution
+**Using vLLM for local inference:**
+```bash
+# Single-bug evaluation with vLLM
+python run_vllm_single_bug_eval.py
+
+# Multi-bug evaluation with vLLM
+python workflow_generic.py --config config/vllm_multi_bug_eval_agent_config.py
+```
+These commands use vLLM for high-performance local model inference. See [VLLM_README.md](VLLM_README.md) for detailed setup instructions.
+
+### 🔧 Advanced Usage - Manual Execution
 
 For more control, you can run individual workflow components manually:
 
 **For single-bug evaluation:**
-
 ```bash
 python workflow_generic.py --config config/single_bug_eval_agent_config.py
 cd workspace/benchmark_evaluation
@@ -147,11 +167,40 @@ python compute_single_eval_results.py
 ```
 
 **For multi-bug evaluation:**
-
 ```bash
 python workflow_generic.py --config config/multi_bug_eval_agent_config.py
 cd workspace/benchmark_evaluation
 python compute_multi_eval_results.py
+```
+
+### 📊 Evaluation Results
+
+The evaluation scripts will generate detailed metrics including:
+
+- **Overall Scores:** Percentage scores for cause lines, effect lines, error types, and error messages
+- **Dimension-wise Metrics:** Precision, Recall, F1-score, and Accuracy for each evaluation dimension
+- **Confusion Matrix:** True Positives (TP), False Positives (FP), and False Negatives (FN) for each dimension
+
+Example output:
+```
+Overall Cause Line Score: 31.25%
+Overall Effect Line Score: 100.00%
+Overall Error Type Score: 0.00%
+Overall Error Message Score: 82.81%
+
+Dimension-wise Metrics:
+{
+    "cause_line": {
+        "precision": 0.3125,
+        "recall": 0.3125,
+        "f1_score": 0.3125,
+        "accuracy": 1.0,
+        "TP": 5,
+        "FP": 11,
+        "FN": 0
+    },
+    ...
+}
 ```
 
 ## 📝 Dataset Creation
@@ -241,7 +290,7 @@ WORKFLOW = [
         },
         'input': {'data': 'path/to/input.jsonl'},  # Input data source
         'data_ids': [1, 2, 3],        # Specific data IDs to process
-        'data_range": [1, 50],        # Mutual exclusive with 'data_ids', specify a range of data IDs to process
+        'data_range': [1, 50],        # Mutual exclusive with 'data_ids', specify a range of data IDs to process
         'output': 'result_name',      # Name for the output
         'output_type': 'analysis'     # Type of output
     },
@@ -249,18 +298,18 @@ WORKFLOW = [
 ]
 ```
 
-### ⚙️ Customizing Agent Parameters
-
-Agents can be customized by modifying the `kwargs` dictionary within their configuration. Common parameters include:
-
 ### ⚙️ Model Selection
 
 The `model_type` parameter in workflow steps specifies the LLM to be used for evaluation:
 
-- `gpt-4o`: OpenAI GPT-4o model.
-- `Qwen/Qwen2.5-72B-Instruct`: Qwen 2.5 model.
-- `deepseek/deepseek-v3`: DeepSeek v3 model.
-- and so on, whatever models your API key allows.
+- `openai/gpt-4o`: OpenAI GPT-4o model
+- `openai/gpt-oss-120b`: OpenAI GPT-OSS-120B model
+- `Qwen/Qwen2.5-72B-Instruct`: Qwen 2.5 model
+- `deepseek/deepseek-v3`: DeepSeek v3 model
+- And other models supported by your API provider
+
+Agents can be customized by modifying the `kwargs` dictionary within their configuration. Common parameters include:
+
 
 # 📊 Experiment Results <a name="experiment-results"></a>
 
