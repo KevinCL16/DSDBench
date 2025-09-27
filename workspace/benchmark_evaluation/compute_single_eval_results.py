@@ -122,7 +122,7 @@ def main():
     dimension_wise_metrics = calculate_single_bug_evaluation_metrics(eval_jsonl_file, ground_truth_jsonl_file, subset_total_errors)
 
     # Read JSONL file to count eval results (predictions made) - optional, but good to know
-    with open(eval_jsonl_file, 'r') as file:
+    with open(eval_jsonl_file, 'r', encoding='utf-8') as file:
         records = [json.loads(line) for line in file]
     num_eval_results_counted = 0
     for record in records:
@@ -195,7 +195,7 @@ def calculate_single_bug_evaluation_metrics(eval_jsonl_file_path, ground_truth_f
 
     num_eval_results = 0
 
-    with open(eval_jsonl_file_path, 'r') as f:
+    with open(eval_jsonl_file_path, 'r', encoding='utf-8') as f:
         records = [json.loads(line) for line in f]
 
         for record in records:
@@ -264,7 +264,7 @@ def get_subset_total_errors(eval_jsonl_file_path, ground_truth_file_path):
             eval_ids.add(record["id"]) # Assuming each record in eval_jsonl has an "id"
 
     subset_total_errors = 0
-    with open(ground_truth_file_path, 'r') as f:
+    with open(ground_truth_file_path, 'r', encoding='utf-8') as f:
         for line in f:
             data = json.loads(line)
             if data["id"] in eval_ids: # Check if the ground truth data's ID is in the eval IDs

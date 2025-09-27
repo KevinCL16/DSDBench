@@ -109,11 +109,16 @@ def main():
     os.chdir("workspace/benchmark_evaluation")
     
     # Convert result file path to absolute path if it's relative
+    # Since we're now in workspace/benchmark_evaluation, use current directory as base
     if not os.path.isabs(args.result_file):
-        # If it's a relative path, make it relative to the original working directory
-        result_file_path = os.path.join(original_dir, args.result_file)
+        result_file_path = os.path.abspath(args.result_file)
     else:
-        result_file_path = args.result_file
+        # If it's absolute, check if it's in the current directory
+        if args.result_file.startswith(original_dir):
+            # Convert to relative path from current directory
+            result_file_path = os.path.basename(args.result_file)
+        else:
+            result_file_path = args.result_file
     
     # Run evaluation script
     print("Computing evaluation results...")
