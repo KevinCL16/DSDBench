@@ -516,9 +516,9 @@ Evaluate the LLM's error message against the Ground Truth error message.
             if result_file:
                 # Use custom result file path
                 result_file_path = result_file
-                # Convert to absolute path if it's relative
+                # Convert to absolute path if it's relative, but use eval_folder as base
                 if not os.path.isabs(result_file_path):
-                    result_file_path = os.path.abspath(result_file_path)
+                    result_file_path = os.path.join(eval_folder, result_file_path)
             else:
                 # Use default naming convention
                 result_file_path = os.path.join(eval_folder, f'eval_{model_type.replace("/", "_").replace(":", "_")}_rubber_duck_case_study_on_bench_v3.jsonl')
@@ -690,9 +690,9 @@ Evaluate the LLM's error message against the Ground Truth error message.
             if result_file:
                 # Use custom result file path
                 result_file_path = result_file
-                # Convert to absolute path if it's relative
+                # Convert to absolute path if it's relative, but use eval_folder as base
                 if not os.path.isabs(result_file_path):
-                    result_file_path = os.path.abspath(result_file_path)
+                    result_file_path = os.path.join(eval_folder, result_file_path)
             else:
                 # Use default naming convention
                 result_file_path = os.path.join(eval_folder, f'eval_{model_type.replace("Qwen/", "").replace(":", "_")}_multi_rubber_duck_CoT_on_multi_bench_v2.jsonl')
