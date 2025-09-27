@@ -26,10 +26,14 @@ class ExactMatchEvaluator:
         Returns:
             Dictionary with evaluation scores (excluding error_message_score)
         """
+        # Extract error type from error message (before first colon)
+        llm_error_type = self._extract_error_type(llm_output.get('error_message', ''))
+        gt_error_type = self._extract_error_type(ground_truth.get('execution_output', ''))
+        
         return {
             'cause_line_score': self._exact_match(llm_output.get('cause_line', ''), ground_truth.get('cause_error_line', '')),
             'effect_line_score': self._exact_match(llm_output.get('effect_line', ''), ground_truth.get('effect_error_line', '')),
-            'error_type_score': self._exact_match(llm_output.get('error_type', ''), ground_truth.get('error_type', ''))
+            'error_type_score': self._exact_match(llm_error_type, gt_error_type)
         }
     
     def evaluate_multi_bug(self, llm_output_errors: List[Dict[str, Any]], ground_truth_errors: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -72,18 +76,45 @@ class ExactMatchEvaluator:
         
         return results
     
+    def _extract_error_type(self, error_message: str) -> str:
+        """Extract error type from error message (text before first colon)"""
+        if not error_message:
+            return ""
+        
+        # Split by first colon and take the first part as error type
+        parts = error_message.split(':', 1)
+        if len(parts) > 0:
+            return parts[0].strip()
+        return ""
+    
     def _exact_match(self, output: str, ground_truth: str) -> int:
         """Check if two strings match exactly (case-insensitive)"""
-        if not output or not ground_truth:
+        # Handle None values
+        if output is None:
+            output = ""
+        if ground_truth is None:
+            ground_truth = ""
+        
+        # Two empty strings should be considered a match
+        if not output.strip() and not ground_truth.strip():
+            return 1
+        
+        # If only one is empty, it's not a match
+        if not output.strip() or not ground_truth.strip():
             return 0
+            
         return 1 if output.strip().lower() == ground_truth.strip().lower() else 0
     
     def _calculate_hybrid_match(self, llm_error: Dict[str, Any], gt_error: Dict[str, Any]) -> Dict[str, Any]:
         """Calculate hybrid match between LLM error and ground truth error"""
+        # Extract error type from error message (before first colon)
+        llm_error_type = self._extract_error_type(llm_error.get('error_message', ''))
+        gt_error_type = self._extract_error_type(gt_error.get('execution_output', ''))
+        
         return {
             'cause_line_score': self._exact_match(llm_error.get('cause_line', ''), gt_error.get('cause_error_line', '')),
             'effect_line_score': self._exact_match(llm_error.get('effect_line', ''), gt_error.get('effect_error_line', '')),
-            'error_type_score': self._exact_match(llm_error.get('error_type', ''), gt_error.get('error_type', ''))
+            'error_type_score': self._exact_match(llm_error_type, gt_error_type)
         }
 
 
