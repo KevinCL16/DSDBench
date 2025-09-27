@@ -31,6 +31,9 @@ cp .env.vllm.example .env
 Edit `.env` file with your configuration:
 
 ```bash
+# Custom cache directory (change to your preferred location)
+HF_CACHE_DIR=D:\AI_Models\huggingface
+
 # vLLM Server Configuration
 VLLM_API_KEY=EMPTY
 VLLM_BASE_URL=http://localhost:8000/v1
@@ -41,6 +44,30 @@ VLLM_PORT=8000
 VLLM_TEMPERATURE=0
 VLLM_MAX_TOKENS=4096
 VLLM_TOP_P=1.0
+```
+
+### 2.1. Set Up Custom Cache Directory (Optional)
+
+By default, Hugging Face downloads models to your system drive. To use a different location:
+
+**Windows:**
+```bash
+# Run the setup script
+setup_cache.bat
+
+# Or manually set environment variables
+setx HF_CACHE_DIR "D:\AI_Models\huggingface"
+```
+
+**Linux/Mac:**
+```bash
+# Add to ~/.bashrc or ~/.zshrc
+export HF_CACHE_DIR="/path/to/your/ai_models/huggingface"
+```
+
+**Verify setup:**
+```bash
+python setup_cache.py
 ```
 
 ### 3. Start vLLM Server

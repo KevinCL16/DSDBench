@@ -4,6 +4,25 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
+# Set up custom Hugging Face cache directory
+def setup_hf_cache():
+    """Set up custom Hugging Face cache directory if not already set."""
+    cache_dir = os.getenv('HF_CACHE_DIR', 'E:/AI_Models/huggingface')
+    
+    # Only set if not already configured
+    if not os.environ.get('HF_HOME'):
+        os.environ['HF_HOME'] = cache_dir
+        os.environ['TRANSFORMERS_CACHE'] = os.path.join(cache_dir, 'transformers')
+        os.environ['HF_HUB_CACHE'] = os.path.join(cache_dir, 'hub')
+        
+        # Create directories if they don't exist
+        os.makedirs(cache_dir, exist_ok=True)
+        os.makedirs(os.path.join(cache_dir, 'transformers'), exist_ok=True)
+        os.makedirs(os.path.join(cache_dir, 'hub'), exist_ok=True)
+
+# Initialize cache setup
+setup_hf_cache()
+
 # vLLM Configuration
 VLLM_API_KEY = os.getenv('VLLM_API_KEY', 'EMPTY')  # Usually empty for local vLLM servers
 VLLM_BASE_URL = os.getenv('VLLM_BASE_URL', 'http://localhost:8000/v1')  # Default vLLM server URL
