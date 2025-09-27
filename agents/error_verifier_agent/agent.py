@@ -361,7 +361,7 @@ class ErrorVerifierAgent(GenericAgent):
         log_string = "\n".join(log)
         return log_string, result_dict
 
-    def rubber_duck_eval(self, queries, model_type, eval_folder, individual_workspace):
+    def rubber_duck_eval(self, queries, model_type, eval_folder, individual_workspace, result_file=None):
         log = []
         query = queries
 
@@ -411,7 +411,7 @@ class ErrorVerifierAgent(GenericAgent):
                             print(
                                 f"\n...............Verifying error version {idx + 1}/{len(error_versions)} (Attempt {retries + 1})...............")
 
-                            result = self.generate(prompt, model_type=model_type, code=modified_code, backend='THU')
+                            result = self.generate(prompt, model_type=model_type, code=modified_code)
 
                             # Locate the first curly brace to the last one for extracting the JSON object
                             start_index = result.rfind('{')
@@ -437,7 +437,7 @@ class ErrorVerifierAgent(GenericAgent):
 
                             print(
                                 f"\n...............Evaluating error version {idx + 1}/{len(error_versions)} (Attempt {retries + 1})...............")
-                            eval_completion = completion_with_backoff(messages, 'gpt-4o', backend='THU')
+                            eval_completion = completion_with_backoff(messages, 'openai/gpt-oss-120b')
 
                             start_index = eval_completion.rfind('{')
                             end_index = eval_completion.rfind('}')
@@ -474,7 +474,17 @@ class ErrorVerifierAgent(GenericAgent):
 
         finally:
             # Save all results to a file
-            with open(os.path.join(eval_folder, f'eval_{model_type.replace("deepseek/", "").replace(":", "_")}_rubber_duck_case_study_on_bench_v3.jsonl'), 'a') as jsonl_file:
+            if result_file:
+                # Use custom result file path
+                result_file_path = result_file
+            else:
+                # Use default naming convention
+                result_file_path = os.path.join(eval_folder, f'eval_{model_type.replace("/", "_").replace(":", "_")}_rubber_duck_case_study_on_bench_v3.jsonl')
+            
+            # Ensure directory exists
+            os.makedirs(os.path.dirname(result_file_path), exist_ok=True)
+            
+            with open(result_file_path, 'a') as jsonl_file:
                 eval_result_dict = {
                     'id': query['id'],
                     'eval_result': eval_results

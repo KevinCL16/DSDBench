@@ -122,7 +122,7 @@ LOG OUTPUT:
 """
         model_dependent_directory = os.path.join(individual_workspace, model_type)
         os.makedirs(model_dependent_directory, exist_ok=True)
-        individual_log_file = os.path.join(model_dependent_directory, f'{agent_name}_{model_type}_log.txt')
+        individual_log_file = os.path.join(model_dependent_directory, f'{agent_name}_{model_type.replace("/", "_").replace(":", "_")}_log.txt')
 
         # 如果是该文件的第一次写入，先清除内容
         if individual_log_file not in self.cleared_log_files:
