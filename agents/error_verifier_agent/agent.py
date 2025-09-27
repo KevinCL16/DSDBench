@@ -11,6 +11,7 @@ from agents.openai_chatComplete import completion_with_backoff
 from agents.utils import fill_in_placeholders, get_error_message, is_run_code_success, run_code
 from agents.utils import print_filesys_struture
 from agents.utils import change_directory
+from .exact_match_evaluator import create_exact_match_evaluator
 
 
 def extract_traceback(error_str):
@@ -104,6 +105,7 @@ def _format_verification_result(result, code):
 class ErrorVerifierAgent(GenericAgent):
     def __init__(self, workspace, **kwargs):
         super().__init__(workspace, **kwargs)
+        self.exact_match_evaluator = create_exact_match_evaluator()
         self.chat_history = []
         self.query = kwargs.get('query', '')
         self.data_information = kwargs.get('data_information', None)
@@ -430,19 +432,56 @@ class ErrorVerifierAgent(GenericAgent):
                                 'eval_dict': llm_output
                             }
 
+                            # Evaluate using exact matching for code lines and error types
+                            print(f"\n...............Evaluating error version {idx + 1}/{len(error_versions)} (Attempt {retries + 1})...............")
+                            
+                            # Get exact match scores for cause_line, effect_line, error_type
+                            exact_scores = self.exact_match_evaluator.evaluate_single_bug(llm_output, ground_truth)
+                            
+                            # Get LLM evaluation for error_message only
+                            error_message_prompt = f"""You are provided with the following error message analysis:
+
+### Ground Truth Error Message:
+{ground_truth.get('execution_output', '')}
+
+### LLM Output Error Message:
+{llm_output.get('error_message', '')}
+
+### Evaluation Task:
+Evaluate the LLM's error message against the Ground Truth error message.
+
+### Evaluation Criteria:
+- **1.0**: The error message in the LLM Output **exactly matches** the Ground Truth (including all key details).
+- **0.75**: The error message is **mostly correct** but lacks minor details.
+- **0.5**: The error message is **partially correct** but contains vague or incomplete information.
+- **0.25**: The error message is **only loosely related** to the Ground Truth.
+- **0.0**: The error message is **completely irrelevant or incorrect**.
+
+### Output Format:
+```json
+{{
+    "error_message_score": 0.0/0.25/0.5/0.75/1.0,
+    "error_message_eval_reason": "Scoring justification (in English)"
+}}
+```"""
+
                             messages = []
                             messages.append({"role": "system", "content": ''})
-                            messages.append(
-                                {"role": "user", "content": fill_in_placeholders(self.prompts['eval'], information)})
-
-                            print(
-                                f"\n...............Evaluating error version {idx + 1}/{len(error_versions)} (Attempt {retries + 1})...............")
-                            eval_completion = completion_with_backoff(messages, 'openai/gpt-oss-120b')
-
-                            start_index = eval_completion.rfind('{')
-                            end_index = eval_completion.rfind('}')
-                            json_str = eval_completion[start_index:end_index + 1]
-                            eval_result = json.loads(json_str)
+                            messages.append({"role": "user", "content": error_message_prompt})
+                            
+                            error_message_completion = completion_with_backoff(messages, 'openai/gpt-oss-120b')
+                            
+                            start_index = error_message_completion.rfind('{')
+                            end_index = error_message_completion.rfind('}')
+                            json_str = error_message_completion[start_index:end_index + 1]
+                            error_message_result = json.loads(json_str)
+                            
+                            # Combine exact match scores with LLM error message score
+                            eval_result = {
+                                **exact_scores,
+                                'error_message_score': error_message_result.get('error_message_score', 0.0),
+                                'error_message_eval_reason': error_message_result.get('error_message_eval_reason', '')
+                            }
                             eval_results.append(eval_result)
 
                             # Log comparison result
@@ -571,22 +610,57 @@ class ErrorVerifierAgent(GenericAgent):
                                 'llm_output_error': llm_error  # Pass the single LLM detected error
                             }
 
+                            # Evaluate using exact matching for code lines and error types
+                            print(f"\n...............Evaluating detected error {llm_error_index + 1}/{len(llm_output_errors)} of error version {query['id']} (Attempt {retries + 1})...............")
+                            
+                            # Get exact match scores for cause_line, effect_line, error_type
+                            exact_scores = self.exact_match_evaluator.evaluate_single_bug(llm_error, ground_truth_info[0] if ground_truth_info else {})
+                            
+                            # Get LLM evaluation for error_message only
+                            error_message_prompt = f"""You are provided with the following error message analysis:
+
+### Ground Truth Error Message:
+{ground_truth_info[0].get('error_message', '') if ground_truth_info else ''}
+
+### LLM Output Error Message:
+{llm_error.get('error_message', '')}
+
+### Evaluation Task:
+Evaluate the LLM's error message against the Ground Truth error message.
+
+### Evaluation Criteria:
+- **1.0**: The error message in the LLM Output **exactly matches** the Ground Truth (including all key details).
+- **0.75**: The error message is **mostly correct** but lacks minor details.
+- **0.5**: The error message is **partially correct** but contains vague or incomplete information.
+- **0.25**: The error message is **only loosely related** to the Ground Truth.
+- **0.0**: The error message is **completely irrelevant or incorrect**.
+
+### Output Format:
+```json
+{{
+    "error_message_score": 0.0/0.25/0.5/0.75/1.0,
+    "error_message_eval_reason": "Scoring justification (in English)"
+}}
+```"""
+
                             messages = []
                             messages.append({"role": "system", "content": ''})
-                            messages.append(
-                                {"role": "user", "content": fill_in_placeholders(self.prompts['eval'],
-                                                                                 information_single_error)})  # Use single-error eval prompt
-
-                            print(
-                                f"\n...............Evaluating detected error {llm_error_index + 1}/{len(llm_output_errors)} of error version {query['id']} (Attempt {retries + 1})...............")
-                            eval_result_str = completion_with_backoff(messages,
-                                                                      'openai/gpt-oss-120b')  # Get single-error eval result
-
-                            start_index = eval_result_str.rfind('{')
-                            end_index = eval_result_str.rfind('}')
-                            json_str = eval_result_str[start_index:end_index + 1]
-                            single_error_eval_result = json.loads(json_str)  # Parse single-error eval JSON
-                            single_error_eval_results.append(single_error_eval_result)  # Append single-error result
+                            messages.append({"role": "user", "content": error_message_prompt})
+                            
+                            error_message_completion = completion_with_backoff(messages, 'openai/gpt-oss-120b')
+                            
+                            start_index = error_message_completion.rfind('{')
+                            end_index = error_message_completion.rfind('}')
+                            json_str = error_message_completion[start_index:end_index + 1]
+                            error_message_result = json.loads(json_str)
+                            
+                            # Combine exact match scores with LLM error message score
+                            single_error_eval_result = {
+                                **exact_scores,
+                                'error_message_score': error_message_result.get('error_message_score', 0.0),
+                                'error_message_eval_reason': error_message_result.get('error_message_eval_reason', '')
+                            }
+                            single_error_eval_results.append(single_error_eval_result)
 
                             log.append(
                                 f"  Error {llm_error_index + 1} Eval Result: {json.dumps(single_error_eval_result, indent=2)}")
