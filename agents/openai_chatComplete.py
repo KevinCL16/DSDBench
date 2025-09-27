@@ -4,6 +4,7 @@ import traceback
 
 import openai
 from agents.config.openai import API_KEY, BASE_URL, temperature
+from agents.vllm_client import vllm_completion_with_backoff, check_vllm_server_health
 from tenacity import (
     retry,
     stop_after_attempt,
@@ -18,78 +19,59 @@ def print_chat_message(messages):
 
 # @retry(wait=wait_random_exponential(min=0.1, max=20), stop=(stop_after_delay(30) | stop_after_attempt(100)))
 def completion_with_backoff(messages, model_type, backend='OpenRouter'):
-
-    '''if model_type in MODEL_CONFIG.keys():
-
-        port = MODEL_CONFIG[model_type]['port']
-        model_full_path= MODEL_CONFIG[model_type]['model']
-
-        openai_api_key = "EMPTY"
-        openai_api_base = f"http://localhost:{port}/v1"
-
-        client = openai.OpenAI(
-
-            api_key=openai_api_key,
-            base_url=openai_api_base,
-        )
-        max_attempts = 3
-        for attempt in range(max_attempts):
-            try:
-                response = client.chat.completions.create(
-
-                    model=model_full_path,
-                    messages=messages,
-                    temperature=temperature,
-                    timeout=30*60,
-                    max_tokens=4096,
-
-                )
-                result = response.choices[0].message
-                answer = result.content
-                if answer:  # 如果answer不为空，直接返回
-                    return answer
-                # 如果answer为空且不是最后一次尝试，继续下一次循环
-                if attempt < max_attempts - 1:
-                    print("API CALL Empty response received. Retrying...")
-                    continue
-            except KeyError:
-
-                return None
-            except openai.BadRequestError as e:
-
-                return e
-
-        # 如果所有尝试都失败，返回None
-        return None'''
-
-    # else:
-
+    """
+    Unified completion function supporting multiple backends.
+    
+    Args:
+        messages: List of message dictionaries
+        model_type: Model type/name
+        backend: Backend type ('OpenRouter', 'THU', 'vLLM')
+    
+    Returns:
+        Response content string or None if failed
+    """
+    
+    # Check if model_type indicates vLLM usage
+    if model_type.startswith('vllm/') or backend == 'vLLM':
+        return vllm_completion_with_backoff(messages, model_type)
+    
+    # Handle THU backend
     if backend == 'THU':
-        client = openai.OpenAI(
+        try:
+            from agents.config.openai import THU_API_KEY, THU_BASE_URL
+            client = openai.OpenAI(
                 api_key=THU_API_KEY,
                 base_url=THU_BASE_URL,
-        )
+            )
+        except ImportError:
+            logging.error("THU API configuration not found. Please check your config.")
+            return None
     else:
+        # Default OpenRouter backend
         client = openai.OpenAI(
-                api_key=API_KEY,
-                base_url=BASE_URL,
+            api_key=API_KEY,
+            base_url=BASE_URL,
         )
 
-    response = client.chat.completions.create(
+    try:
+        response = client.chat.completions.create(
             model=model_type,
             messages=messages,
             temperature=temperature,
-    )
-    result = response.choices[0].message
-    answer = result.content
-    return answer
+        )
+        result = response.choices[0].message
+        answer = result.content
+        return answer
+    except Exception as e:
+        logging.error(f"API call failed: {e}")
+        return None
 
 
-def completion_with_log(messages, model_type, enable_log=False):
+def completion_with_log(messages, model_type, enable_log=False, backend='OpenRouter'):
     if enable_log:
         logging.info('========CHAT HISTORY========')
         print_chat_message(messages)
-    response = completion_with_backoff(messages, model_type)
+    response = completion_with_backoff(messages, model_type, backend)
     if enable_log:
         logging.info('========RESPONSE========')
         logging.info(response)

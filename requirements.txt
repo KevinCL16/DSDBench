@@ -10,4 +10,9 @@ tqdm>=4.62.0
 jsonlines>=2.0.0
 argparse>=1.4.0
 pillow>=8.4.0
-python-dotenv>=0.19.0 
+python-dotenv>=0.19.0
+requests>=2.25.0
+# vLLM dependencies (optional - only needed if using vLLM backend)
+# vllm>=0.2.0  # Uncomment if you want to install vLLM directly
+# torch>=2.0.0  # Uncomment if using vLLM
+# transformers>=4.30.0  # Uncomment if using vLLM 
