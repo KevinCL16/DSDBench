@@ -55,12 +55,19 @@ coverage.xml
 
 # Environment
 .env
+.env.local
+.env.*.local
 .venv
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
+
+# API Keys and Secrets
+*.key
+secrets.json
+config.json
 
 # Project specific
 *.log
